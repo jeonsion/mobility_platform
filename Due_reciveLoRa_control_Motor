@@ -1,0 +1,168 @@
+#include <SPI.h>
+#include <LoRa.h>
+
+
+#define NSS_PIN 10
+#define RESET_PIN 9
+#define DIO0_PIN 2
+
+//모터 드라이버 1 사용
+//바퀴 1 핀설정
+#define ENA1 7
+#define IN1_1 A8
+#define IN1_2 A9
+
+//바퀴 2 핀설정
+#define IN1_3 A10 
+#define IN1_4 A11
+#define ENB1 8
+
+//모터드라이버 2 사용 
+//바퀴 4 핀설정
+
+#define IN2_3 A4
+#define IN2_4 A5
+#define ENB2 6
+
+
+//바퀴 3 핀설정
+#define ENA2 3
+#define IN2_1 A2
+#define IN2_2 A3
+
+
+//#define MOTOR_SPEED 0
+
+//button1,2 => 왼쪽 바퀴
+//button3,4 => 오른쪽 바
+boolean button1 = 0;
+boolean button2 = 0;
+boolean button3 = 0;
+boolean button4 = 0; 
+
+
+void setup() {
+  // set up serial port
+  Serial.begin(115200);
+
+  while (!Serial);
+
+  SPI.begin();
+  LoRa.setPins(NSS_PIN, RESET_PIN, DIO0_PIN);
+
+  if (!LoRa.begin(9209E5)) {
+    Serial.println("LoRa initialization failed.");
+    while (1);
+  }
+
+  Serial.println("LoRa initialization successful.");
+  // set all the motor pins OUTPUT mode
+  
+  pinMode(ENA1, OUTPUT); 
+  pinMode(IN1_1, OUTPUT);
+  pinMode(IN1_2, OUTPUT);
+  pinMode(IN1_3, OUTPUT);
+  pinMode(IN1_4, OUTPUT);
+  pinMode(ENB1, OUTPUT);
+
+  
+  pinMode(ENA2, OUTPUT);
+  pinMode(IN2_1, OUTPUT);
+  pinMode(IN2_2, OUTPUT);
+  pinMode(IN2_3, OUTPUT);
+  pinMode(IN2_4, OUTPUT);
+  pinMode(ENB2, OUTPUT);
+
+
+}
+
+
+void loop() {
+  char control = '0';
+  int packetSize = LoRa.parsePacket();
+  if (packetSize) {
+    unsigned char control = '0';
+    //Serial.print("Received packet '");
+    while (LoRa.available()) {
+      char control = (char)LoRa.read();
+      rc_ctrl_val(control);
+      Serial.println(control);
+
+    }
+    motor_drive();
+    
+
+  }
+  
+}
+
+
+void rc_ctrl_val(unsigned char cmd){
+  
+  // 정지
+  if(cmd == '1')
+  {
+    button1 = 0;
+    button2 = 0;
+    button3 = 0;
+    button4 = 0;
+  }
+  
+  //앞으로 전진
+  if (cmd == 'w')
+    button1 = 0;
+    button2 = 1;
+    button3 = 0;
+    button4 = 1;
+  }
+
+  //뒤로 후
+  
+  if (cmd == 's')
+  {
+    button1 = 1;
+    button2 = 0;
+    button3 = 1;
+    button4 = 0;
+  }
+
+  //왼쪽으로 이동
+  if( cmd == 'a')
+  {
+    button1 = 0;
+    button2 = 1;
+    button3 = 1;
+    button4 = 0;
+  }
+
+  if (cmd == 'd')
+  {
+    button1 = 1;
+    button2 = 0;
+    button3 = 0;
+    button4 = 1;
+    
+  }
+}
+
+
+void motor_drive(){
+    
+    digitalWrite(IN1_1, button1);
+    digitalWrite(IN1_2, button2);
+    digitalWrite(IN1_3, button1);
+    digitalWrite(IN1_4, button2);
+    analogWrite(ENA1, 255);
+    analogWrite(ENB1, 255);
+
+
+    digitalWrite(IN2_1, button3);
+    digitalWrite(IN2_2, button4);
+    digitalWrite(IN2_3, button3);
+    digitalWrite(IN2_4, button4);
+    analogWrite(ENA2, 255);
+    analogWrite(ENB2, 255);
+    
+
+    
+}
