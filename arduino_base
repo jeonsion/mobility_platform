@@ -5,13 +5,13 @@
 #define IN1_1 A8
 #define IN1_2 A9
 
-//바퀴 2 핀설정
+//바퀴 4 핀설정
 #define IN1_3 A10 
 #define IN1_4 A11
 #define ENB1 8
 
 //모터드라이버 2 사용 
-//바퀴 4핀설정
+//바퀴 2핀설정
 
 #define IN2_3 A4
 #define IN2_4 A5
